@@ -47,7 +47,7 @@
 
 CDVDInputStream* CDVDFactoryInputStream::CreateInputStream(IVideoPlayer* pPlayer, const CFileItem &fileitem, bool scanforextaudio)
 {
-  std::string file = fileitem.GetPath();
+  std::string file = fileitem.GetPlayablePath();
   if (scanforextaudio)
   {
     // find any available external audio tracks

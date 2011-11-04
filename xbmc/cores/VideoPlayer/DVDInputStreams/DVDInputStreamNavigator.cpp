@@ -80,7 +80,7 @@ bool CDVDInputStreamNavigator::Open()
   // libdvdcss fails if the file path contains VIDEO_TS.IFO or VIDEO_TS/VIDEO_TS.IFO
   // libdvdnav is still able to play without, so strip them.
 
-  std::string path = m_item.GetPath();
+  std::string path = m_item.GetPlayablePath();
   if(URIUtils::GetFileName(path) == "VIDEO_TS.IFO")
     path = URIUtils::GetParentPath(path);
   URIUtils::RemoveSlashAtEnd(path);

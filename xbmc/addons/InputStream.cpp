@@ -228,7 +228,9 @@ bool CInputStream::Open(CFileItem &fileitem)
     props.m_nCountInfoValues++;
   }
 
-  props.m_strURL = fileitem.GetPath().c_str();
+  const std::string path(fileitem.GetPlayablePath());
+
+  props.m_strURL = path.c_str();
   
   std::string libFolder = URIUtils::GetDirectory(m_parentLib);
   std::string profileFolder = CSpecialProtocol::TranslatePath(Profile());

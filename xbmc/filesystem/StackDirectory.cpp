@@ -26,6 +26,7 @@
 #include "utils/StringUtils.h"
 #include "settings/AdvancedSettings.h"
 #include "URL.h"
+#include "utils/StubUtil.h"
 
 namespace XFILE
 {
@@ -49,6 +50,8 @@ namespace XFILE
     {
       CFileItemPtr item(new CFileItem(*i));
       item->SetPath(*i);
+      if (item->IsEfileStub())
+        item->SetPlayablePath(g_stubutil.GetXMLString(item->GetPath(), "efilestub", "path"));
       item->m_bIsFolder = false;
       items.Add(item);
     }

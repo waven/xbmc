@@ -168,7 +168,7 @@ void CPlayerSelectionRule::GetPlayers(const CFileItem& item, std::vector<std::st
       return;
   }
 
-  CURL url(item.GetPath());
+  CURL url(item.GetPlayablePath());
 
   if (CompileRegExp(m_fileTypes, regExp) && !MatchesRegExp(url.GetFileType(), regExp))
     return;
@@ -179,7 +179,7 @@ void CPlayerSelectionRule::GetPlayers(const CFileItem& item, std::vector<std::st
   if (CompileRegExp(m_mimeTypes, regExp) && !MatchesRegExp(item.GetMimeType(), regExp))
     return;
 
-  if (CompileRegExp(m_fileName, regExp) && !MatchesRegExp(item.GetPath(), regExp))
+  if (CompileRegExp(m_fileName, regExp) && !MatchesRegExp(item.GetPlayablePath(), regExp))
     return;
 
   CLog::Log(LOGDEBUG, "CPlayerSelectionRule::GetPlayers: matches rule: %s", m_name.c_str());

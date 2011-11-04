@@ -40,6 +40,7 @@
 #include "music/MusicDatabase.h"
 #include "utils/StringUtils.h"
 #include "settings/AdvancedSettings.h"
+#include "utils/StubUtil.h"
 
 using namespace XFILE;
 using namespace std;
@@ -57,6 +58,14 @@ CThumbExtractor::CThumbExtractor(const CFileItem& item, const CStdString& listpa
 
   if (m_item.IsStack())
     m_item.SetPath(CStackDirectory::GetFirstStackedFile(m_item.GetPath()));
+
+  if (g_stubutil.IsEfileStub(m_item.GetPath()))
+  {
+    std::string m_path;
+    g_stubutil.GetXMLString(m_item.GetPath(), "efilestub", "path", m_path);
+    m_item.SetPath(m_path);
+    m_item.GetVideoInfoTag()->m_strFileNameAndPath = m_path;
+  }
 }
 
 CThumbExtractor::~CThumbExtractor()
@@ -93,6 +102,9 @@ bool CThumbExtractor::DoWork()
     if (!URIUtils::IsDAV(m_item.GetPath()))
       return false;
   }
+
+  if (!CFile::Exists(m_item.GetPath(), false))
+    return false;
 
   bool result=false;
   if (m_thumb)

@@ -59,6 +59,7 @@ set(SOURCES ActorProtocol.cpp
             StreamUtils.cpp
             StringUtils.cpp
             StringValidation.cpp
+            StubUtil.cpp
             SysfsUtils.cpp
             SystemInfo.cpp
             Temperature.cpp
@@ -146,6 +147,7 @@ set(HEADERS ActorProtocol.h
             StreamUtils.h
             StringUtils.h
             StringValidation.h
+            StubUtil.h
             SysfsUtils.h
             SystemInfo.h
             Temperature.h

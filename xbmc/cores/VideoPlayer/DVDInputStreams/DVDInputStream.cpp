@@ -49,7 +49,7 @@ void CDVDInputStream::Close()
 
 std::string CDVDInputStream::GetFileName()
 {
-  CURL url(m_item.GetPath());
+  CURL url(m_item.GetPlayablePath());
 
   url.SetProtocolOptions("");
   return url.Get();

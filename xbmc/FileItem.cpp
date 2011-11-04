@@ -60,6 +60,7 @@
 #include "utils/Mime.h"
 #include "utils/Random.h"
 #include "events/IEvent.h"
+#include "utils/StubUtil.h"
 
 #include <assert.h>
 #include <algorithm>
@@ -810,6 +811,17 @@ bool CFileItem::IsPVRRadioRDS() const
   return HasPVRRadioRDSInfoTag();
 }
 
+bool CFileItem::IsStub(bool checkPlayablePath) const
+{
+  std::string path;
+  if (checkPlayablePath)
+    path = GetPlayablePath();
+  else
+    path = GetPath();
+
+  return URIUtils::HasExtension(path, g_advancedSettings.m_discStubExtensions);
+}
+
 bool CFileItem::IsDiscStub() const
 {
   if (IsVideoDb() && HasVideoInfoTag())
@@ -818,7 +830,25 @@ bool CFileItem::IsDiscStub() const
     return dbItem.IsDiscStub();
   }
 
-  return URIUtils::HasExtension(m_strPath, g_advancedSettings.m_discStubExtensions);
+  if (IsStub())
+    return g_stubutil.CheckRootElement(m_strPath, "discstub");
+
+  return false;
+}
+
+bool CFileItem::IsEfileStub(bool checkPlayablePath) const
+{
+  if (checkPlayablePath)
+  {
+    if (IsStub(true))
+      return g_stubutil.CheckRootElement(GetPlayablePath(), "efilestub");
+  }
+  else
+  {
+    if (IsStub())
+      return g_stubutil.CheckRootElement(GetPath(), "efilestub");
+  }
+  return false;
 }
 
 bool CFileItem::IsAudio() const
@@ -888,7 +918,7 @@ bool CFileItem::IsInternetStream(const bool bStrictCheck /* = false */) const
   if (HasProperty("IsHTTPDirectory"))
     return false;
 
-  return URIUtils::IsInternetStream(m_strPath, bStrictCheck);
+  return URIUtils::IsInternetStream(GetPlayablePath(), bStrictCheck);
 }
 
 bool CFileItem::IsFileFolder(EFileFolderType types) const
@@ -1044,7 +1074,7 @@ bool CFileItem::IsStack() const
 
 bool CFileItem::IsPlugin() const
 {
-  return URIUtils::IsPlugin(m_strPath);
+  return URIUtils::IsPlugin(GetPlayablePath());
 }
 
 bool CFileItem::IsScript() const
@@ -1340,9 +1370,9 @@ void CFileItem::FillInMimeType(bool lookup /*= true*/)
       m_mimetype = "x-directory/normal";
     else if( m_pvrChannelInfoTag )
       m_mimetype = m_pvrChannelInfoTag->InputFormat();
-    else if( StringUtils::StartsWithNoCase(m_strPath, "shout://")
-          || StringUtils::StartsWithNoCase(m_strPath, "http://")
-          || StringUtils::StartsWithNoCase(m_strPath, "https://"))
+    else if( StringUtils::StartsWithNoCase(GetPlayablePath(), "shout://")
+          || StringUtils::StartsWithNoCase(GetPlayablePath(), "http://")
+          || StringUtils::StartsWithNoCase(GetPlayablePath(), "https://"))
     {
       // If lookup is false, bail out early to leave mime type empty
       if (!lookup)
@@ -1585,7 +1615,7 @@ void CFileItem::SetURL(const CURL& url)
 
 const CURL CFileItem::GetURL() const
 {
-  CURL url(m_strPath);
+  CURL url(GetPlayablePath());
   return url;
 }
 
@@ -3410,4 +3440,17 @@ double CFileItem::GetCurrentResumeTime() const
   }
   // Resume from start when resume points are invalid or the PVR server returns an error
   return 0;
+}
+
+std::string CFileItem::GetPlayablePath() const
+{
+  if (HasProperty("playable_path"))
+    return GetProperty("playable_path").asString();
+  else
+    return GetPath();
+}
+
+void CFileItem::SetPlayablePath(const std::string &path)
+{
+  SetProperty("playable_path", path);
 }

@@ -8,19 +8,26 @@
 
 #include "GUIDialogPlayEject.h"
 
+#include "FileItem.h"
 #include "ServiceBroker.h"
 #include "guilib/GUIComponent.h"
 #include "guilib/GUIWindowManager.h"
 #include "storage/MediaManager.h"
+#include "utils/StubUtil.h"
 #include "utils/Variant.h"
+#include "utils/XMLUtils.h"
+#include "utils/log.h"
+#include "filesystem/File.h"
 
 #include <utility>
 
-#define ID_BUTTON_PLAY      11
-#define ID_BUTTON_EJECT     10
+#define ID_BUTTON_PLAY 11
+#define ID_BUTTON_EJECT 10
+
+CFileItem currentItem;
 
 CGUIDialogPlayEject::CGUIDialogPlayEject()
-    : CGUIDialogYesNo(WINDOW_DIALOG_PLAY_EJECT)
+  : CGUIDialogYesNo(WINDOW_DIALOG_PLAY_EJECT)
 {
 }
 
@@ -33,7 +40,8 @@ bool CGUIDialogPlayEject::OnMessage(CGUIMessage& message)
     int iControl = message.GetSenderId();
     if (iControl == ID_BUTTON_PLAY)
     {
-      if (CServiceBroker::GetMediaManager().IsDiscInDrive())
+      if ((currentItem.IsEfileStub() && XFILE::CFile::Exists(currentItem.GetDynPath(), false)) ||
+        CServiceBroker::GetMediaManager().IsDiscInDrive())
       {
         m_bConfirmed = true;
         Close();
@@ -43,17 +51,24 @@ bool CGUIDialogPlayEject::OnMessage(CGUIMessage& message)
     }
     if (iControl == ID_BUTTON_EJECT)
     {
-      CServiceBroker::GetMediaManager().ToggleTray();
+      if (currentItem.IsEfileStub())
+        Close();
+      else
+        CServiceBroker::GetMediaManager().ToggleTray();
+
       return true;
     }
   }
-
   return CGUIDialogYesNo::OnMessage(message);
 }
 
 void CGUIDialogPlayEject::FrameMove()
 {
-  CONTROL_ENABLE_ON_CONDITION(ID_BUTTON_PLAY, CServiceBroker::GetMediaManager().IsDiscInDrive());
+  if (currentItem.IsEfileStub())
+    CONTROL_ENABLE_ON_CONDITION(ID_BUTTON_PLAY,
+                                XFILE::CFile::Exists(currentItem.GetDynPath(), false));
+  else
+    CONTROL_ENABLE_ON_CONDITION(ID_BUTTON_PLAY, CServiceBroker::GetMediaManager().IsDiscInDrive());
 
   CGUIDialogYesNo::FrameMove();
 }
@@ -73,24 +88,45 @@ void CGUIDialogPlayEject::OnInitWindow()
   CGUIDialogYesNo::OnInitWindow();
 }
 
-bool CGUIDialogPlayEject::ShowAndGetInput(const std::string& strLine1,
-                                          const std::string& strLine2,
+bool CGUIDialogPlayEject::ShowAndGetInput(const std::string strLine1,
+                                          const std::string strLine2,
+                                          const CFileItem& item,
                                           unsigned int uiAutoCloseTime /* = 0 */)
 {
 
+  currentItem = item;
+
   // Create the dialog
-  CGUIDialogPlayEject * pDialog = (CGUIDialogPlayEject *)CServiceBroker::GetGUI()->GetWindowManager().
-    GetWindow(WINDOW_DIALOG_PLAY_EJECT);
+  CGUIDialogPlayEject* pDialog =
+      (CGUIDialogPlayEject*)CServiceBroker::GetGUI()->GetWindowManager().GetWindow(
+          WINDOW_DIALOG_PLAY_EJECT);
   if (!pDialog)
     return false;
 
   // Setup dialog parameters
-  pDialog->SetHeading(CVariant{219});
-  pDialog->SetLine(0, CVariant{429});
-  pDialog->SetLine(1, CVariant{strLine1});
-  pDialog->SetLine(2, CVariant{strLine2});
+  int headingStr;
+  int line0Str;
+  int ejectButtonStr;
+
+  if (item.IsDiscStub())
+  {
+    headingStr = 219;
+    line0Str = 429;
+    ejectButtonStr = 13391;
+  }
+  else if (item.IsEfileStub())
+  {
+    headingStr = 295;
+    line0Str = 472;
+    ejectButtonStr = 13468;
+  }
+
+  pDialog->SetHeading(CVariant{headingStr});
+  pDialog->SetLine(0, CVariant{line0Str});
+  pDialog->SetLine(1, CVariant{std::move(strLine1)});
+  pDialog->SetLine(2, CVariant{std::move(strLine2)});
   pDialog->SetChoice(ID_BUTTON_PLAY - 10, 208);
-  pDialog->SetChoice(ID_BUTTON_EJECT - 10, 13391);
+  pDialog->SetChoice(ID_BUTTON_EJECT - 10, ejectButtonStr);
   if (uiAutoCloseTime)
     pDialog->SetAutoClose(uiAutoCloseTime);
 

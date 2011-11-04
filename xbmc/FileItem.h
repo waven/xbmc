@@ -161,8 +161,9 @@ public:
    \return true if item is video, false otherwise.
    */
   bool IsVideo() const;
-
+  bool IsStub(bool checkDynPath = false) const;
   bool IsDiscStub() const;
+  bool IsEfileStub(bool checkDynPath = false) const;
 
   /*!
    \brief Check whether an item is a picture item. Note that this returns true for

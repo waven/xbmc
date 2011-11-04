@@ -87,6 +87,7 @@
 #include "settings/SkinSettings.h"
 #include "utils/CPUInfo.h"
 #include "utils/FileExtensionProvider.h"
+#include "utils/StubUtil.h"
 #include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
 #include "utils/XTimeUtils.h"
@@ -2893,9 +2894,16 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
       CUtil::ClearSubtitles();
   }
 
-  if (item.IsDiscStub())
+  if (item.IsEfileStub() && item.IsEfileStub(true))
   {
-    return CServiceBroker::GetMediaManager().playStubFile(item);
+      CFileItem item_new(item);
+	    item_new.SetDynPath(g_stubutil.GetXMLString(item.GetPath(), "efilestub", "path"));
+      return PlayFile(item_new, player, bRestart);
+  }
+
+  if (item.IsDiscStub() || (item.IsEfileStub() && !item.IsEfileStub(true) && !CFile::Exists(item.GetDynPath())))
+  {
+    return CServiceBroker::GetMediaManager().playStubFile(item, player, bRestart);
   }
 
   if (item.IsPlayList())
@@ -2914,7 +2922,7 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
     return false;
 
 #ifdef HAS_UPNP
-  if (URIUtils::IsUPnP(item.GetPath()))
+  if (URIUtils::IsUPnP(item.GetDynPath()))
   {
     if (!XFILE::CUPnPDirectory::GetResource(item.GetURL(), item))
       return false;
@@ -2925,7 +2933,18 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
   // "seamless" seeking and total time of the movie etc.
   // will recall with restart set to true
   if (item.IsStack())
-    return PlayStack(item, bRestart);
+  {
+    std::string strPathFirstElement = CStackDirectory::GetFirstStackedFile(item.GetPath());
+    if (g_stubutil.IsEfileStub(strPathFirstElement) && !CFile::Exists(g_stubutil.GetXMLString(strPathFirstElement, "efilestub", "path"), false))
+    {
+      CFileItem item_new(item);
+      item_new.SetPath(strPathFirstElement);
+      item_new.SetDynPath(g_stubutil.GetXMLString(strPathFirstElement, "efilestub", "path"));
+      return PlayFile(item_new, player, bRestart);
+    }
+    else
+      return PlayStack(item, bRestart);
+  }
 
   CPlayerOptions options;
 
@@ -2980,8 +2999,6 @@ bool CApplication::PlayFile(CFileItem item, const std::string& player, bool bRes
           std::string path = item.GetPath();
           if (item.HasVideoInfoTag() && StringUtils::StartsWith(item.GetVideoInfoTag()->m_strFileNameAndPath, "removable://"))
             path = item.GetVideoInfoTag()->m_strFileNameAndPath;
-          else if (item.HasProperty("original_listitem_url") && URIUtils::IsPlugin(item.GetProperty("original_listitem_url").asString()))
-            path = item.GetProperty("original_listitem_url").asString();
           if (dbs.GetResumeBookMark(path, bookmark))
           {
             options.starttime = bookmark.timeInSeconds;

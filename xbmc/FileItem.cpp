@@ -56,6 +56,7 @@
 #include "video/Bookmark.h"
 #include "video/VideoDatabase.h"
 #include "video/VideoInfoTag.h"
+#include "utils/StubUtil.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -893,6 +894,17 @@ bool CFileItem::IsPVRTimer() const
   return HasPVRTimerInfoTag();
 }
 
+bool CFileItem::IsStub(bool checkDynPath) const
+{
+  std::string path;
+  if (checkDynPath)
+    path = GetDynPath();
+  else
+    path = GetPath();
+
+  return URIUtils::HasExtension(path, CServiceBroker::GetFileExtensionProvider().GetDiscStubExtensions());
+}
+
 bool CFileItem::IsDiscStub() const
 {
   if (IsVideoDb() && HasVideoInfoTag())
@@ -901,7 +913,25 @@ bool CFileItem::IsDiscStub() const
     return dbItem.IsDiscStub();
   }
 
-  return URIUtils::HasExtension(m_strPath, CServiceBroker::GetFileExtensionProvider().GetDiscStubExtensions());
+  if (IsStub())
+    return g_stubutil.CheckRootElement(m_strPath, "discstub");
+
+  return false;
+}
+
+bool CFileItem::IsEfileStub(bool checkDynPath) const
+{
+  if (checkDynPath)
+  {
+    if (IsStub(true))
+      return g_stubutil.CheckRootElement(GetDynPath(), "efilestub");
+  }
+  else
+  {
+    if (IsStub())
+      return g_stubutil.CheckRootElement(GetPath(), "efilestub");
+  }
+  return false;
 }
 
 bool CFileItem::IsAudio() const
@@ -1019,7 +1049,7 @@ bool CFileItem::IsInternetStream(const bool bStrictCheck /* = false */) const
   if (!m_strDynPath.empty())
     return URIUtils::IsInternetStream(m_strDynPath, bStrictCheck);
 
-  return URIUtils::IsInternetStream(m_strPath, bStrictCheck);
+  return URIUtils::IsInternetStream(GetDynPath(), bStrictCheck);
 }
 
 bool CFileItem::IsFileFolder(EFileFolderType types) const
@@ -1185,7 +1215,7 @@ bool CFileItem::IsStack() const
 
 bool CFileItem::IsPlugin() const
 {
-  return URIUtils::IsPlugin(m_strPath);
+  return URIUtils::IsPlugin(GetDynPath());
 }
 
 bool CFileItem::IsScript() const
@@ -1885,7 +1915,7 @@ void CFileItem::SetURL(const CURL& url)
 
 const CURL CFileItem::GetURL() const
 {
-  CURL url(m_strPath);
+  CURL url(GetDynPath());
   return url;
 }
 

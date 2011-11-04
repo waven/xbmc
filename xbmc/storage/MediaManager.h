@@ -90,7 +90,7 @@ public:
 
   void OnJobComplete(unsigned int jobID, bool success, CJob *job) override { }
 
-  bool playStubFile(const CFileItem& item);
+  bool playStubFile(const CFileItem& item, const std::string& player, bool bRestart);
 
 protected:
   std::vector<CNetworkLocation> m_locations;

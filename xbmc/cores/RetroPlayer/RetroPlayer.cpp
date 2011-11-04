@@ -79,7 +79,7 @@ bool CRetroPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options
   }
 
   // Check if we should open in standalone mode
-  const bool bStandalone = fileCopy.GetPath().empty();
+  const bool bStandalone = fileCopy.GetDynPath().empty();
 
   m_processInfo.reset(CRPProcessInfo::CreateInstance());
   if (!m_processInfo)

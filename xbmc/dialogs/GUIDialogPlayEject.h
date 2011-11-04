@@ -19,8 +19,9 @@ public:
   bool OnMessage(CGUIMessage& message) override;
   void FrameMove() override;
 
-  static bool ShowAndGetInput(const std::string& strLine1,
-                              const std::string& strLine2,
+  static bool ShowAndGetInput(const std::string strLine1,
+                              const std::string strLine2,
+                              const CFileItem& item,
                               unsigned int uiAutoCloseTime = 0);
 
 protected:

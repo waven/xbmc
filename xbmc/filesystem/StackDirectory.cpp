@@ -16,6 +16,7 @@
 #include "utils/StringUtils.h"
 #include "utils/URIUtils.h"
 #include "utils/log.h"
+#include "utils/StubUtil.h"
 
 #include <stdlib.h>
 
@@ -37,6 +38,10 @@ namespace XFILE
     {
       CFileItemPtr item(new CFileItem(i));
       item->SetPath(i);
+
+      if (item->IsEfileStub())
+        item->SetDynPath(g_stubutil.GetXMLString(item->GetPath(), "efilestub", "path"));
+
       item->m_bIsFolder = false;
       items.Add(item);
     }

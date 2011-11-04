@@ -1115,6 +1115,7 @@
     <ClCompile Include="..\..\xbmc\utils\StreamDetails.cpp" />
     <ClCompile Include="..\..\xbmc\utils\StreamUtils.cpp" />
     <ClCompile Include="..\..\xbmc\utils\StringUtils.cpp" />
+    <ClCompile Include="..\..\xbmc\utils\StubUtil.cpp" />
     <ClCompile Include="..\..\xbmc\utils\SystemInfo.cpp" />
     <ClCompile Include="..\..\xbmc\utils\TimeSmoother.cpp" />
     <ClCompile Include="..\..\xbmc\utils\TimeUtils.cpp" />
@@ -1910,6 +1911,7 @@
     <ClInclude Include="..\..\xbmc\utils\StreamDetails.h" />
     <ClInclude Include="..\..\xbmc\utils\StreamUtils.h" />
     <ClInclude Include="..\..\xbmc\utils\StringUtils.h" />
+    <ClInclude Include="..\..\xbmc\utils\StubUtil.h" />
     <ClInclude Include="..\..\xbmc\utils\SystemInfo.h" />
     <ClInclude Include="..\..\xbmc\utils\TimeSmoother.h" />
     <ClInclude Include="..\..\xbmc\utils\TimeUtils.h" />

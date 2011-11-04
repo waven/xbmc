@@ -2390,6 +2390,9 @@
     <ClCompile Include="..\..\xbmc\utils\POUtils.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\utils\StubUtil.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\xbmc\XbmcContext.cpp" />
     <ClCompile Include="..\..\xbmc\network\ZeroconfBrowser.cpp">
       <Filter>network</Filter>
@@ -4988,6 +4991,9 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\interfaces\python\xbmcmodule\pythreadstate.h">
       <Filter>interfaces\python\xbmcmodule</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\utils\StubUtil.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\xbmc\network\ZeroconfBrowser.h">
       <Filter>network</Filter>

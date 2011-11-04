@@ -86,6 +86,7 @@
 #ifdef HAS_FILESYSTEM_HTSP
 #include "filesystem/HTSPDirectory.h"
 #endif
+#include "utils/StubUtil.h"
 #include "utils/TuxBoxUtil.h"
 #include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
@@ -3777,8 +3778,25 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
     if (CGUIDialogPlayEject::ShowAndGetInput(item))
       // PlayDiscAskResume takes path to disc. No parameter means default DVD drive.
       // Can't do better as CGUIDialogPlayEject calls CMediaManager::IsDiscInDrive, which assumes default DVD drive anyway
-      return MEDIA_DETECT::CAutorun::PlayDiscAskResume(); 
+      return MEDIA_DETECT::CAutorun::PlayDiscAskResume();
 #endif
+    return true;
+  }
+
+  if (item.IsEfileStub())
+  {
+   CFileItem item_new;
+    if(g_stubutil.CreateNewItem(item, item_new))
+    {
+      // Make sure it doesn't have a player
+      // so we actually select one normally
+      m_eCurrentPlayer = EPC_NONE;
+
+      // Play external file if already present
+      // else show PlayEject dialoge
+      if (CFile::Exists(item_new.GetPath(), false) || (CGUIDialogPlayEject::ShowAndGetInput(item_new)))
+        return PlayFile(item_new, bRestart);
+    }
     return true;
   }
 
@@ -3880,6 +3898,8 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
           path = item.GetVideoInfoTag()->m_strFileNameAndPath;
         else if (item.HasProperty("original_listitem_url") && URIUtils::IsPlugin(item.GetProperty("original_listitem_url").asString()))
           path = item.GetProperty("original_listitem_url").asString();
+        else if (item.IsEfileStub(true))
+          path = item.GetProperty("stub_file_path").asString();
         if(dbs.GetResumeBookMark(path, bookmark))
         {
           options.starttime = bookmark.timeInSeconds;

@@ -39,6 +39,7 @@
 #include "music/tags/MusicInfoTagLoaderFactory.h"
 #include "music/infoscanner/MusicInfoScanner.h"
 #include "music/Artist.h"
+#include "utils/StubUtil.h"
 
 using namespace XFILE;
 using namespace std;
@@ -83,6 +84,15 @@ CThumbExtractor::CThumbExtractor(const CFileItem& item, const CStdString& listpa
 
   if (URIUtils::IsStack(m_path))
     m_path = CStackDirectory::GetFirstStackedFile(m_path);
+
+  CFileItem item_new = CFileItem();
+  item_new.SetPath(m_path);
+
+  if (item_new.IsEfileStub())
+  {
+    g_stubutil.GetXMLString(item_new.GetPath(), "efilestub", "path", m_path);
+    m_item.GetVideoInfoTag()->m_strFileNameAndPath = m_path;
+  }
 }
 
 CThumbExtractor::~CThumbExtractor()
@@ -113,6 +123,9 @@ bool CThumbExtractor::DoWork()
     return false;
 
   if (URIUtils::IsRemote(m_path) && !URIUtils::IsOnLAN(m_path))
+    return false;
+
+  if (!CFile::Exists(m_path, false))
     return false;
 
   bool result=false;

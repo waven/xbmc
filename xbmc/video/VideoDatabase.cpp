@@ -4211,6 +4211,12 @@ void CVideoDatabase::SetPlayCount(const CFileItem &item, int count, const CDateT
     item2.SetPath(item.GetProperty("original_listitem_url").asString());
     id = AddFile(item2);
   }
+  else if (item.IsEfileStub(true))
+  {
+    CFileItem item2(item);
+    item2.SetPath(item.GetProperty("stub_file_path").asString());
+    id = AddFile(item2);
+  }
   else
     id = AddFile(item);
   if (id < 0)

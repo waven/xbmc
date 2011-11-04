@@ -56,6 +56,7 @@
 #include "music/karaoke/karaokelyricsfactory.h"
 #include "utils/Mime.h"
 #include "utils/CharsetConverter.h"
+#include "utils/StubUtil.h"
 
 using namespace std;
 using namespace XFILE;
@@ -558,10 +559,14 @@ bool CFileItem::IsVideo() const
   return (g_settings.m_videoExtensions.Find(extension) != -1);
 }
 
-bool CFileItem::IsDiscStub() const
+bool CFileItem::IsStub(bool checkProperty) const
 {
+  CStdString strPath = m_strPath;
+  if (checkProperty && HasProperty("stub_file_path"))
+    strPath = GetProperty("stub_file_path").asString();
+
   CStdString strExtension;
-  URIUtils::GetExtension(m_strPath, strExtension);
+  URIUtils::GetExtension(strPath, strExtension);
 
   if (strExtension.IsEmpty())
     return false;
@@ -570,6 +575,24 @@ bool CFileItem::IsDiscStub() const
   strExtension += '|';
 
   return (g_settings.m_discStubExtensions + '|').Find(strExtension) != -1;
+}
+
+bool CFileItem::IsDiscStub() const
+{
+  if (IsStub())
+    return g_stubutil.CheckRootElement(m_strPath, "discstub");
+
+  return false;
+}
+
+bool CFileItem::IsEfileStub(bool checkProperty) const
+{
+  if (IsStub())
+    return g_stubutil.CheckRootElement(m_strPath, "efilestub");
+  else if (checkProperty)
+    return HasProperty("stub_file_path");
+
+  return false;
 }
 
 bool CFileItem::IsAudio() const

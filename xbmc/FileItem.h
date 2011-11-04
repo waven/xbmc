@@ -92,7 +92,9 @@ public:
 
   bool Exists(bool bUseCache = true) const;
   bool IsVideo() const;
+  bool IsStub(bool checkProperty = false) const;
   bool IsDiscStub() const;
+  bool IsEfileStub(bool checkProperty = false) const;
   bool IsPicture() const;
   bool IsLyrics() const;
   bool IsAudio() const;

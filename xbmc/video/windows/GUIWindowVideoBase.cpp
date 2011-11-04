@@ -1347,6 +1347,8 @@ bool CGUIWindowVideoBase::OnPlayMedia(int iItem)
   {
     item.SetPath(pItem->GetVideoInfoTag()->m_strFileNameAndPath);
     item.SetProperty("original_listitem_url", pItem->GetPath());
+    if (item.IsEfileStub())
+      item.SetProperty("original_path", pItem->GetVideoInfoTag()->m_strFileNameAndPath);
   }
   CLog::Log(LOGDEBUG, "%s %s", __FUNCTION__, item.GetPath().c_str());
 

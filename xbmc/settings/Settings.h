@@ -163,6 +163,7 @@ public:
   CStdString m_musicExtensions;
   CStdString m_videoExtensions;
   CStdString m_discStubExtensions;
+  CStdString m_efileStubExtensions;
 
   CStdString m_logFolder;
 

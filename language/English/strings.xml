@@ -214,6 +214,7 @@
   <string id="243">Refresh Rate</string>
   <string id="244">Full screen</string>
   <string id="245">Sizing: (%i,%i)->(%i,%i) (Zoom x%2.2f) AR:%2.2f:1 (Pixels: %2.2f:1) (VShift: %2.2f)</string>
+  <string id="246">Please attach harddrive</string>
 
   <string id="247">Scripts</string>
   <string id="248">Language</string>
@@ -393,6 +394,7 @@
   <string id="432">Remove movie from library</string>
   <string id="433">Really remove '%s'?</string>
   <string id="434">From %s at %i %s</string> <!--From <wind dir.> at <speed> <unit>-->
+  <string id="435">Please attach the following harddrive:</string>
 
   <string id="437">Removable disk</string>
   <string id="438">Opening file</string>
@@ -1232,6 +1234,7 @@
   <string id="13430">Allow hardware acceleration (OpenMax)</string>
   <string id="13431">Pixel Shaders</string>
   <string id="13432">Allow hardware acceleration (VideoToolbox)</string>
+  <string id="13433">Close</string>
 
   <string id="13500">A/V sync method</string>
   <string id="13501">Audio clock</string>

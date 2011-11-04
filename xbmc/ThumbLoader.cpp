@@ -37,6 +37,7 @@
 #include "video/VideoInfoTag.h"
 #include "video/VideoDatabase.h"
 #include "cores/dvdplayer/DVDFileInfo.h"
+#include "utils/StubUtil.h"
 
 using namespace XFILE;
 using namespace std;
@@ -103,6 +104,12 @@ CThumbExtractor::CThumbExtractor(const CFileItem& item, const CStdString& listpa
 
   if (URIUtils::IsStack(m_path))
     m_path = CStackDirectory::GetFirstStackedFile(m_path);
+
+  if (g_stubutil.IsEfile(m_item.GetVideoInfoTag()->m_strFileNameAndPath))
+  {
+    g_stubutil.GetXMLString(m_item.GetVideoInfoTag()->m_strFileNameAndPath, "path", m_path, "efilestub");
+    m_item.GetVideoInfoTag()->m_strFileNameAndPath = m_path;
+  }
 }
 
 CThumbExtractor::~CThumbExtractor()
@@ -133,6 +140,9 @@ bool CThumbExtractor::DoWork()
     return false;
 
   if (URIUtils::IsRemote(m_path) && !URIUtils::IsOnLAN(m_path))
+    return false;
+
+  if (!CFile::Exists(m_path, false))
     return false;
 
   bool result=false;

@@ -2567,6 +2567,8 @@
     </ClCompile>
     <ClCompile Include="..\..\xbmc\cores\paplayer\PCMCodec.cpp">
       <Filter>cores\paplayer</Filter>
+    <ClCompile Include="..\..\xbmc\utils\StubUtil.cpp">
+      <Filter>utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -5159,6 +5161,8 @@
     </ClInclude>
     <ClInclude Include="..\..\xbmc\cores\paplayer\PCMCodec.h">
       <Filter>cores\paplayer</Filter>
+    <ClInclude Include="..\..\xbmc\utils\StubUtil.h">
+      <Filter>utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

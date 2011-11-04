@@ -23,6 +23,11 @@ public:
 
 bool CSaveFileStateJob::DoWork()
 {
+  if (m_item.HasProperty("original_path"))
+  {
+    m_item.SetPath(m_item.GetProperty("original_path").asString());
+  }
+
   CStdString progressTrackingFile = m_item.GetPath();
   if (m_item.HasVideoInfoTag() && m_item.GetVideoInfoTag()->m_strFileNameAndPath.Find("removable://") == 0)
     progressTrackingFile = m_item.GetVideoInfoTag()->m_strFileNameAndPath; // this variable contains removable:// suffixed by disc label+uniqueid or is empty if label not uniquely identified

@@ -73,6 +73,7 @@
 #ifdef HAS_FILESYSTEM_HTSP
 #include "filesystem/HTSPDirectory.h"
 #endif
+#include "utils/StubUtil.h"
 #include "utils/TuxBoxUtil.h"
 #include "utils/SystemInfo.h"
 #include "utils/TimeUtils.h"
@@ -3623,6 +3624,24 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
     return true;
   }
 
+  if (item.IsEfileStub())
+  {
+    CFileItem item_new;
+    if(g_stubutil.CreateNewItem(item, item_new, "efilestub"))
+    {
+      // Make sure it doesn't have a player
+      // so we actually select one normally
+      m_eCurrentPlayer = EPC_NONE;
+
+      // Play external file if already present
+      // else show PlayEject dialoge
+      if (CFile::Exists(item_new.GetPath(), false) || (CGUIDialogPlayEject::ShowAndGetInput(item)))
+        return PlayFile(item_new, bRestart);
+    }
+
+      return false;
+  }
+
   if (item.IsPlayList())
     return false;
 
@@ -3721,6 +3740,8 @@ bool CApplication::PlayFile(const CFileItem& item, bool bRestart)
           path = item.GetVideoInfoTag()->m_strFileNameAndPath;
         else if (item.HasProperty("original_listitem_url") && URIUtils::IsPlugin(item.GetProperty("original_listitem_url").asString()))
           path = item.GetProperty("original_listitem_url").asString();
+        else if (item.HasProperty("original_path"))
+          path = item.GetProperty("original_path").asString();
         if(dbs.GetResumeBookMark(path, bookmark))
         {
           options.starttime = bookmark.timeInSeconds;

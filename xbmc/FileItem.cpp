@@ -530,6 +530,19 @@ bool CFileItem::IsDiscStub() const
   return (g_settings.m_discStubExtensions + '|').Find(strExtension) != -1;
 }
 
+bool CFileItem::IsEfileStub() const
+{
+  CStdString strExtension;
+  URIUtils::GetExtension(m_strPath, strExtension);
+
+  if (strExtension.IsEmpty())
+    return false;
+
+  strExtension.ToLower();
+
+  return (g_settings.m_efileStubExtensions).Find(strExtension) != -1;
+}
+
 bool CFileItem::IsAudio() const
 {
   /* check preset mime type */

@@ -3532,10 +3532,14 @@ void CGUIInfoManager::SetCurrentMovie(CFileItem &item)
   CLog::Log(LOGDEBUG,"CGUIInfoManager::SetCurrentMovie(%s)",item.GetPath().c_str());
   *m_currentFile = item;
 
+  CStdString strPathAndFilename = item.GetPath();
+  if (item.HasProperty("original_path"))
+    strPathAndFilename = item.GetProperty("original_path").asString();
+
   CVideoDatabase dbs;
   if (dbs.Open())
   {
-    dbs.LoadVideoInfo(item.GetPath(), *m_currentFile->GetVideoInfoTag());
+    dbs.LoadVideoInfo(strPathAndFilename, *m_currentFile->GetVideoInfoTag());
     dbs.Close();
   }
 

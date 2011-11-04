@@ -26,6 +26,7 @@
 #include "DetectDVDType.h"
 #endif
 #endif
+#include "Application.h"
 #include "Autorun.h"
 #include "AutorunMediaJob.h"
 #include "GUIUserMessages.h"
@@ -43,6 +44,7 @@
 #include "utils/StringUtils.h"
 #include "utils/XBMCTinyXML.h"
 #include "utils/log.h"
+#include "utils/StubUtil.h"
 
 #if defined(TARGET_POSIX) && !defined(TARGET_DARWIN) && !defined(TARGET_FREEBSD)
 #include <sys/ioctl.h>
@@ -764,7 +766,7 @@ void CMediaManager::RemoveDiscInfo(const std::string& devicePath)
     m_mapDiscInfo.erase(it);
 }
 
-bool CMediaManager::playStubFile(const CFileItem& item)
+bool CMediaManager::playStubFile(const CFileItem& item, const std::string& player, bool bRestart)
 {
   // Figure out Lines 1 and 2 of the dialog
   std::string strLine1, strLine2;
@@ -773,32 +775,37 @@ bool CMediaManager::playStubFile(const CFileItem& item)
   strLine1 = g_localizeStrings.Get(435).c_str();
   strLine2 = g_localizeStrings.Get(436).c_str();
 
-  CXBMCTinyXML discStubXML;
-  if (discStubXML.LoadFile(item.GetPath()))
+  std::string strRootElement;
+  if (item.IsDiscStub())
+    strRootElement = "discstub";
+  else
+    strRootElement = "efilestub";
+  
+  g_stubutil.GetXMLString(item.GetPath(), strRootElement, "title", strLine1);
+  g_stubutil.GetXMLString(item.GetPath(), strRootElement, "message", strLine2);
+
+  // Use the label for Line 1 if not defined
+  if (strLine1.empty())
+    strLine1 = item.GetLabel();
+
+  if (item.IsDiscStub())
   {
-    TiXmlElement* pRootElement = discStubXML.RootElement();
-    if (!pRootElement || StringUtils::CompareNoCase(pRootElement->Value(), "discstub") != 0)
-      CLog::Log(LOGINFO, "No <discstub> node found for %s. Using default info dialog message", item.GetPath().c_str());
+    if (HasOpticalDrive())
+    {
+  #ifdef HAS_DVD_DRIVE
+      if (CGUIDialogPlayEject::ShowAndGetInput(strLine1, strLine2, item))
+        return MEDIA_DETECT::CAutorun::PlayDiscAskResume();
+  #endif
+    }
     else
     {
-      XMLUtils::GetString(pRootElement, "title", strLine1);
-      XMLUtils::GetString(pRootElement, "message", strLine2);
-      // no title? use the label of the CFileItem as line 1
-      if (strLine1.empty())
-        strLine1 = item.GetLabel();
+      KODI::MESSAGING::HELPERS::ShowOKDialogText(strLine1, strLine2);
     }
   }
-
-  if (HasOpticalDrive())
+  else if (item.IsEfileStub())
   {
-#ifdef HAS_DVD_DRIVE
-    if (CGUIDialogPlayEject::ShowAndGetInput(strLine1, strLine2))
-      return MEDIA_DETECT::CAutorun::PlayDiscAskResume();
-#endif
-  }
-  else
-  {
-    KODI::MESSAGING::HELPERS::ShowOKDialogText(strLine1, strLine2);
+    if (CGUIDialogPlayEject::ShowAndGetInput(strLine1, strLine2, item))
+      return g_application.PlayFile(item, player, bRestart);
   }
   return true;
 }

@@ -70,6 +70,7 @@
 #include "filesystem/SpecialProtocol.h"
 #include "filesystem/DllLibCurl.h"
 #include "filesystem/PluginDirectory.h"
+#include "utils/StubUtil.h"
 #ifdef HAS_FILESYSTEM_SAP
 #include "filesystem/SAPDirectory.h"
 #endif
@@ -3215,7 +3216,7 @@ PlayBackRet CApplication::PlayStack(const CFileItem& item, bool bRestart)
       else
       {
         int duration;
-        if (!CDVDFileInfo::GetFileDuration((*m_currentStack)[i]->GetPath(), duration))
+		if (!CDVDFileInfo::GetFileDuration((*m_currentStack)[i]->GetPlayablePath(), duration))
         {
           m_currentStack->Clear();
           return PLAYBACK_FAIL;
@@ -3321,6 +3322,27 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
     return PLAYBACK_OK;
   }
 
+  if (item.IsEfileStub())
+  {
+    if (!item.HasProperty("playable_path") || item.IsEfileStub(true))
+    {
+      CFileItem item_new(item);
+      item_new.SetPlayablePath(g_stubutil.GetXMLString(item.GetPath(), "efilestub", "path"));
+      return PlayFile(item_new, bRestart);
+		}
+		else
+		{
+      if (!CFile::Exists(item.GetPlayablePath()))
+      {
+        // Show PlayEject dialoge
+        if (CGUIDialogPlayEject::ShowAndGetInput(item))
+          return PlayFile(item, bRestart);
+
+        return PLAYBACK_OK;
+       }
+    }
+  }
+
   if (item.IsPlayList())
     return PLAYBACK_FAIL;
 
@@ -3341,7 +3363,7 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   }
 
 #ifdef HAS_UPNP
-  if (URIUtils::IsUPnP(item.GetPath()))
+  if (URIUtils::IsUPnP(item.GetPlayablePath()))
   {
     CFileItem item_new(item);
     if (XFILE::CUPnPDirectory::GetResource(item.GetURL(), item_new))
@@ -3354,7 +3376,21 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
   // "seamless" seeking and total time of the movie etc.
   // will recall with restart set to true
   if (item.IsStack())
-    return PlayStack(item, bRestart);
+  {
+    std::string strPathFirstElement = CStackDirectory::GetFirstStackedFile(item.GetPath());
+    if (g_stubutil.IsEfileStub(strPathFirstElement) && !CFile::Exists(g_stubutil.GetXMLString(strPathFirstElement, "efilestub", "path"), false))
+    {
+      CFileItem item_new(item);
+      item_new.SetPath(strPathFirstElement);
+      item_new.SetPlayablePath(g_stubutil.GetXMLString(strPathFirstElement, "efilestub", "path"));
+      if (CGUIDialogPlayEject::ShowAndGetInput(item_new))
+        return PlayFile(item, bRestart);
+
+      return PLAYBACK_OK;
+    }
+    else
+      return PlayStack(item, bRestart);
+  }
 
   CPlayerOptions options;
 
@@ -3399,8 +3435,6 @@ PlayBackRet CApplication::PlayFile(const CFileItem& item, bool bRestart)
         std::string path = item.GetPath();
         if (item.HasVideoInfoTag() && StringUtils::StartsWith(item.GetVideoInfoTag()->m_strFileNameAndPath, "removable://"))
           path = item.GetVideoInfoTag()->m_strFileNameAndPath;
-        else if (item.HasProperty("original_listitem_url") && URIUtils::IsPlugin(item.GetProperty("original_listitem_url").asString()))
-          path = item.GetProperty("original_listitem_url").asString();
         if(dbs.GetResumeBookMark(path, bookmark))
         {
           options.starttime = bookmark.timeInSeconds;

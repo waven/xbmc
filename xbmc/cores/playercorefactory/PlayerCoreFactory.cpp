@@ -159,9 +159,9 @@ void CPlayerCoreFactory::GetPlayers( VECPLAYERCORES &vecCores, const bool audio,
 
 void CPlayerCoreFactory::GetPlayers( const CFileItem& item, VECPLAYERCORES &vecCores) const
 {
-  CURL url(item.GetPath());
+  CURL url(item.GetPlayablePath());
 
-  CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers(%s)", CURL::GetRedacted(item.GetPath()).c_str());
+  CLog::Log(LOGDEBUG, "CPlayerCoreFactory::GetPlayers(%s)", CURL::GetRedacted(item.GetPlayablePath()).c_str());
 
   // Process rules
   for(unsigned int i = 0; i < m_vecCoreSelectionRules.size(); i++)
